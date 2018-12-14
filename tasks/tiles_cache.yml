@@ -1,0 +1,21 @@
+# inspired by https://github.com/FreiFunkMuenster/Ansible-Freifunk-Gateway/blob/master/mapserver_nginx/tasks/main.yml
+- name: Create nginx caching dirs for tiles caching
+  file:
+    path: "{{item.path}}"
+    state: directory
+    recurse: true
+  with_items:
+    - "{{nginx_tiles_cache_locations}}"
+
+- name: Deploy nginx site
+  template:
+    src: default.conf.j2
+    dest: /etc/nginx/sites-available/{{nginx_tiles_cache_site_name}}
+  notify:
+    - restart nginx
+
+- name: Activate Nginx site
+  file: src=/etc/nginx/sites-available/{{nginx_tiles_cache_site_name}} dest=/etc/nginx/sites-enabled/{{nginx_tiles_cache_site_name}} state=link
+  notify:
+    - restart nginx
+

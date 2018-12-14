@@ -1,0 +1,4 @@
+- include_tasks: 'nginx.yml'
+  when: 'nginx_tiles_cache_manage_nginx'
+
+- include_tasks: 'tiles_cache.yml'

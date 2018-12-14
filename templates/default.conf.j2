@@ -1,0 +1,38 @@
+# {{ansible_managed}}
+{% for cache in nginx_tiles_cache_locations %}
+proxy_cache_path  {{cache.path}} levels=1:2 keys_zone={{cache.name}}:10m max_size={{cache.max_size}} inactive=365d;
+proxy_temp_path   {{cache.path}}/tmp;
+{% endfor %}
+
+{% for upstream in nginx_tiles_cache_upstreams %}
+upstream {{upstream.name}} {
+{% for server in upstream.servers %}
+  server {{server}};
+{% endfor %}
+}
+{% endfor %}
+
+server {
+  listen 80  default_server;
+  listen [::]:80  default_server;
+
+  server_name {{nginx_tiles_cache_hostname}};
+
+  # root /var/www/html;
+  add_header X-Cached $upstream_cache_status;
+
+  {% for instance in nginx_tiles_cache_instances %}
+  location {{instance.location}} {
+    proxy_set_header        Host $host;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+
+    proxy_redirect          off;
+    proxy_cache             {{instance.cache_location_name}};
+    proxy_cache_valid  200 302 {{instance.valid_time}};
+    proxy_cache_valid  404  1m;
+    proxy_pass              {{instance.dest_url}};
+  }
+  {% endfor %}
+}
