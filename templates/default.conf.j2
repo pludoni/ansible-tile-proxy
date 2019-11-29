@@ -1,6 +1,6 @@
 # {{ansible_managed}}
 {% for cache in nginx_tiles_cache_locations %}
-proxy_cache_path  {{cache.path}} levels=1:2 keys_zone={{cache.name}}:10m max_size={{cache.max_size}} inactive=365d;
+proxy_cache_path  {{cache.path}} levels=1:2 keys_zone={{cache.name}}:180m max_size={{cache.max_size}} inactive=365d;
 proxy_temp_path   {{cache.path}}/tmp;
 {% endfor %}
 
@@ -17,6 +17,7 @@ server {
   listen [::]:80  default_server;
 
   server_name {{nginx_tiles_cache_hostname}};
+  access_log off;
 
   # root /var/www/html;
   add_header X-Cached $upstream_cache_status;
